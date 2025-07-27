@@ -1,5 +1,17 @@
 import axios from 'axios';
 
+// Axios interceptor to add JWT token to Authorization header
+axios.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 const API_URL = 'http://localhost:3000/api';
 
 export const getUser = async (page = 1, limit = 10) => {

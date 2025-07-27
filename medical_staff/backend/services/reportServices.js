@@ -9,13 +9,14 @@ import {
   Blood,
   BloodInventory,
   BloodRequest,
+  sequelize
 } from "../models/index.js";
 import { Sequelize, Op } from "sequelize";
 
-export const getUsers = async (limit, page) => {
+export const getUsers = async (limit, page, center_id) => {
   const offset = (page - 1) * limit;
-  // Count total donation records instead of users
-  const total = await DonationRecord.count();
+  // Count total donation records for this center
+  const total = await DonationRecord.count({ where: { center_id } });
 
   const users = await DonationRecord.findAll({
     attributes: ["donation_id", "volume", "date"],
@@ -37,7 +38,8 @@ export const getUsers = async (limit, page) => {
     ],
     limit: limit,
     offset: offset,
-    order: [["date", "DESC"]], // Changed to DESC to show newest donations first
+    order: [["date", "DESC"]],
+    where: { center_id },
   });
 
   return {
@@ -50,12 +52,13 @@ export const getUsers = async (limit, page) => {
     data: users,
   };
 };
-export const getBloodInventories = async (limit, page) => {
+export const getBloodInventories = async (limit, page, center_id) => {
   try {
     const offset = (page - 1) * limit;
 
-    // Get total count of valid inventory records
+    // Get total count of valid inventory records for this center
     const total = await BloodInventory.count({
+      where: { center_id },
       include: [
         {
           model: Blood,
@@ -70,9 +73,10 @@ export const getBloodInventories = async (limit, page) => {
       ],
     });
 
-    // Get paginated inventory records
+    // Get paginated inventory records for this center
     const bloodInventory = await BloodInventory.findAll({
       attributes: ["inventory_id", "quantity_units"],
+      where: { center_id },
       include: [
         {
           model: Blood,
@@ -111,66 +115,62 @@ export const getBloodInventories = async (limit, page) => {
       data: inventoryWithTotalVolume,
     };
   } catch (error) {
-    console.error("Error in getBloodInventories:", error);
+    console.error("Error fetching blood inventory:", error);
     throw error;
   }
 };
-export const getTotalVolumeByBloodTypeService = async () => {
+export const getTotalVolumeByBloodTypeService = async (center_id) => {
   try {
-    // Start with BloodType and left join to Blood to ensure we get all blood types
-    const result = await BloodType.findAll({
-      attributes: [
-        ["type", "blood_type"],
-        [
-          Sequelize.fn(
-            "COALESCE",
-            Sequelize.fn("SUM", Sequelize.col("Blood.volume")),
-            0
-          ),
-          "total_volume",
-        ],
-      ],
-      include: [
-        {
-          model: Blood,
-          attributes: [],
-          required: false, // Use left join to get all blood types
-          where: {
-            expiry_date: {
-              [Op.gt]: new Date(), // only fetch non-expired blood
-            },
-          },
-        },
-      ],
-      group: ["BloodType.type", "BloodType.type_id"],
-      raw: true, // Get plain objects directly
+    const results = await sequelize.query(`
+      SELECT
+        bt.type AS blood_type,
+        COALESCE(SUM(b.volume), 0) AS total_volume
+      FROM blood_type bt
+      LEFT JOIN (
+        SELECT b.*
+        FROM blood b
+        JOIN donation_record dr ON b.donation_id = dr.donation_id
+        WHERE dr.center_id = :center_id AND b.expiry_date > NOW()
+      ) b ON bt.type_id = b.blood_type_id
+      GROUP BY bt.type, bt.type_id
+      ORDER BY bt.type
+    `, {
+      replacements: { center_id },
+      type: sequelize.QueryTypes.SELECT
     });
-
-    return result.map((item) => ({
+    return results.map(item => ({
       type: item.blood_type,
-      totalVolume: parseInt(item.total_volume),
+      totalVolume: parseInt(item.total_volume) || 0
     }));
   } catch (error) {
-    console.error("Error fetching total volume by blood type:", error);
+    console.error("Error fetching total volume by blood type (raw):", error);
     throw error;
   }
 };
 
-export const getTotalDonationCount = async () => {
+export const getTotalDonationCount = async (center_id) => {
   try {
-    const count = await DonationRecord.count();
+    const count = await DonationRecord.count({ where: { center_id } });
     return count;
   } catch (error) {
     console.error("Error fetching total donation count:", error);
     throw error;
   }
 };
-export const getTotalPendingRequestCount = async () => {
+export const getTotalPendingRequestCount = async (center_id) => {
   try {
+    // Join BloodRequest with MedicalStaff to filter by center_id
     const count = await BloodRequest.count({
       where: {
         status: "Pending",
       },
+      include: [
+        {
+          model: MedicalStaff,
+          required: true,
+          where: { center_id },
+        },
+      ],
     });
     return count;
   } catch (error) {
@@ -185,6 +185,7 @@ export const getFilteredDonors = async ({
   blood_type,
   date_from,
   date_to,
+  center_id,
 }) => {
   try {
     const offset = (page - 1) * limit;
@@ -195,12 +196,15 @@ export const getFilteredDonors = async ({
       include: [
         {
           model: User,
+          required: !!blood_type, // Only require if filtering by blood type
           attributes: ["user_id", "first_name", "last_name"],
           include: [
             {
               model: BloodType,
               attributes: ["type"],
-              ...(blood_type && { where: { type: blood_type } }),
+              ...(blood_type
+                ? { where: { type: blood_type }, required: true }
+                : {}),
             },
           ],
         },
@@ -209,7 +213,7 @@ export const getFilteredDonors = async ({
           attributes: ["first_name", "last_name"],
         },
       ],
-      where: {},
+      where: { center_id },
       limit,
       offset,
       order: [["date", "DESC"]],
@@ -256,17 +260,9 @@ export const getFilteredBloodInventories = async ({
   bloodType,
   expiryFrom,
   expiryTo,
+  center_id,
 }) => {
   try {
-    console.log("Received bloodType filter value:", bloodType);
-    // Test association path
-    const test = await BloodInventory.findOne({
-      include: {
-        model: Blood,
-        include: BloodType,
-      },
-    });
-    console.log("Sample association test:", test?.Blood?.BloodType);
     const offset = (page - 1) * limit;
     let normalizedBloodType = bloodType;
     if (bloodType) {
@@ -298,9 +294,10 @@ export const getFilteredBloodInventories = async ({
         include: [bloodTypeInclude],
       },
     ];
-    const total = await BloodInventory.count({ include });
+    const total = await BloodInventory.count({ where: { center_id }, include });
     const bloodInventory = await BloodInventory.findAll({
       attributes: ["inventory_id", "quantity_units"],
+      where: { center_id },
       include,
       order: [["inventory_id", "DESC"]],
       limit,

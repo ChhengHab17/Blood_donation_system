@@ -13,6 +13,9 @@ export default function Login() {
     try {
       const response = await loginUser(email, password)
       console.log("Login response:", response)
+      if (response.token) {
+        localStorage.setItem('token', response.token)
+      }
       alert("Login successful")
       navigate("/report")
     } catch (error) {

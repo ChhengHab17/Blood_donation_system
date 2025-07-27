@@ -64,7 +64,7 @@ export default function RequesterNameAutocomplete({ value, onChange, onSelect })
 
   return (
     <div className="relative">
-      <label className="block text-sm font-medium text-gray-700 mb-1">Requester name</label>
+      <label className="block text-sm font-medium text-gray-700 mb-1">Requester name<span className="text-red-500 ml-1">*</span></label>
       <input
         type="text"
         value={value}
