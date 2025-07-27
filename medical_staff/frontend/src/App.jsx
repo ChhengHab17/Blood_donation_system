@@ -1,22 +1,26 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom'
 import BloodRequestPage from './pages/BloodRequestPage'
 import ReportPage from './pages/ReportPage'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
-
+import BloodInventoryPage from './pages/BloodInventory'
+import DonorManagementPage from './pages/DonorManagement'
+import DonorDetail from './pages/DonorDetail'
 
 function App() {
   const [count, setCount] = useState(0)
 
   return (
-      <Router>
-          <Routes>
-              <Route path='/blood-request' element={<BloodRequestPage />} />
-              <Route path='/report' element={<ReportPage />} />
-          </Routes>
-      </Router>
+    <Router>
+      <Routes>
+        <Route path='/' element={<Navigate to="/donor-management" replace />} />
+        <Route path='/blood-request' element={<BloodRequestPage />} />
+        <Route path='/report' element={<ReportPage />} />
+        <Route path='/blood-inventory' element={<BloodInventoryPage />} />
+        <Route path='/donor-management' element={<DonorManagementPage />} />
+        <Route path="/donor-management/:donorId/details" element={<DonorDetail />} />
+
+      </Routes>
+    </Router>
   )
 }
 
