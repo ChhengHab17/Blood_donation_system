@@ -4,6 +4,8 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import BloodRequestPage from './pages/BloodRequestPage'
 import ReportPage from './pages/ReportPage'
+import Login from './pages/loginPage'
+import SignUp from './pages/SignUp'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 
 
@@ -15,6 +17,8 @@ function App() {
           <Routes>
               <Route path='/center-request' element={<BloodRequestPage />} />
               <Route path='/report' element={<ReportPage />} />
+              <Route path='/login' element={<Login />} />
+              <Route path='/signup' element={<SignUp />} />
           </Routes>
       </Router>
   )

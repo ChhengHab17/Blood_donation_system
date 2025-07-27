@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { userRouter } from './routes/reportRoutes.js';
+import { authRouter } from './routes/authRoutes.js';
 import { sequelize } from './models/index.js';
 import dotenv from 'dotenv';
 
@@ -10,6 +11,7 @@ app.use(cors());
 
 app.use(express.json());
 app.use('/api', userRouter);
+app.use('/auth', authRouter);
 
 // Test database connection
 sequelize.authenticate()

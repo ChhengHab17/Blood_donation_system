@@ -354,17 +354,13 @@ export const createRequest = async (requestData) => {
       throw new Error(`Blood type '${requestData.bloodType}' not found`);
     }
 
-    // For now, we'll use a default user_id (you might want to get this from authentication)
-    // In a real application, this would come from the logged-in user
-    const defaultUserId = 1; // You should replace this with actual user authentication
-
     // Create the request with validated data
     const request = await BloodRequest.create({
       staff_id: requestData.medicalStaffId,
-      user_id: defaultUserId || "N/A", 
+      user_id: null, // Medical staff requests don't need user_id
       blood_type_id: bloodTypeRecord.type_id,
-      quantity_units: quantity, // Use the validated quantity
-      request_date: new Date().toISOString().split('T')[0], // Current date in YYYY-MM-DD format
+      quantity_units: quantity,
+      request_date: new Date().toISOString().split('T')[0],
       status: 'Pending'
     });
 

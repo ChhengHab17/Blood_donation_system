@@ -111,3 +111,43 @@ export const searchName = async (name) => {
         throw error;
     }
 }
+export const registerUser = async (firstName, lastName, email, phoneNumber, role, centerId, password, rePassword) => {
+    try {
+        const response = await axios.post(`http://localhost:3000/auth/register`, {
+            firstName,
+            lastName,
+            email,
+            phoneNumber,
+            role,
+            centerId,
+            password,
+            rePassword
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error registering user:', error);
+        throw error;
+    }
+}
+export const loginUser = async (email, password) => {
+    try {
+        const response = await axios.post(`http://localhost:3000/auth/login`, {
+            email,
+            password
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error logging in:', error);
+        throw error;
+    }
+}
+
+export const getDonationCenters = async () => {
+    try {
+        const response = await axios.get(`http://localhost:3000/auth/donation-centers`);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching donation centers:', error);
+        throw error;
+    }
+}
