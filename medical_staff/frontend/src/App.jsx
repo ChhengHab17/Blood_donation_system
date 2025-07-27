@@ -1,23 +1,20 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import BloodRequestPage from './pages/BloodRequestPage'
-import ReportPage from './pages/ReportPage'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
-
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import AppointmentsPage from './pages/AppointmentPage';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-      <Router>
-          <Routes>
-              <Route path='/blood-request' element={<BloodRequestPage />} />
-              <Route path='/report' element={<ReportPage />} />
-          </Routes>
-      </Router>
-  )
+    <Router>
+      <div className="App">
+        <Routes>
+          <Route path="/" element={<div>Home Page - Coming Soon</div>} />
+          <Route path="/blood-request" element={<div>Blood Request - Coming Soon</div>} />
+          <Route path="/appointment" element={<AppointmentsPage />} />
+        </Routes>
+      </div>
+    </Router>
+  );
 }
 
-export default App
+export default App;
