@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import appointmentRoutes from './routes/appointmentRoutes.js';
+import bloodRequestRoutes from './routes/bloodRequestRoutes.js';
 import sequelize from './config/database.js';
 import './models/index.js'; // Import to load associations
 
@@ -17,6 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/appointments', appointmentRoutes);
+app.use('/api/blood-requests', bloodRequestRoutes);
 
 // Health check endpoint
 app.get('/api/health', async (req, res) => {
