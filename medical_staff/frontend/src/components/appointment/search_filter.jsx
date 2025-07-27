@@ -32,9 +32,10 @@ const SearchFilter = ({
               className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none"
             >
               <option value="All">All Status</option>
-              <option value="approved">Approved</option>
-              <option value="not approved">Not Approved</option>
-              <option value="no status">No Status</option>
+              <option value="Scheduled">Scheduled</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+              <option value="No show">No Show</option>
             </select>
           </div>
         </div>
