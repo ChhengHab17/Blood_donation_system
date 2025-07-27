@@ -12,6 +12,9 @@ export default function DonorTable() {
     fetch("http://localhost:3001/api/donors") // Adjust endpoint if needed
       .then((res) => res.json())
       .then((data) => {
+      const sorted = data.sort((a, b) => b.user_id - a.user_id); // 🔥 Sort by newest
+      setDonors(sorted);
+      setLoading(false);
         console.log("Fetched donors:", data)
         setDonors(data)
         setLoading(false)

@@ -5,6 +5,7 @@ import ReportPage from './pages/ReportPage'
 import BloodInventoryPage from './pages/BloodInventory'
 import DonorManagementPage from './pages/DonorManagement'
 import DonorDetail from './pages/DonorDetail'
+import EditDonor from './pages/EditDonor'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -18,6 +19,7 @@ function App() {
         <Route path='/blood-inventory' element={<BloodInventoryPage />} />
         <Route path='/donor-management' element={<DonorManagementPage />} />
         <Route path="/donor-management/:donorId/details" element={<DonorDetail />} />
+        <Route path='/donor-management/:donorId/edit' element={<EditDonor />} />
 
       </Routes>
     </Router>

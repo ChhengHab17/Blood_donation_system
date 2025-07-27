@@ -75,6 +75,26 @@ export default function DonorDetail() {
     })
     return timeString ? `${date} at ${timeString}` : date
   }
+  const handleDelete = () => {
+  const confirmed = window.confirm("Are you sure you want to delete this donor?");
+  if (!confirmed) return;
+
+  fetch(`http://localhost:3001/api/donors/${donorId}`, {
+    method: "DELETE",
+  })
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error("Failed to delete donor");
+      }
+      alert("Donor deleted successfully");
+      navigate("/donor-management");
+    })
+    .catch((err) => {
+      console.error("Error deleting donor:", err);
+      alert("Error deleting donor: " + err.message);
+    });
+};
+
 
   if (loading) {
     return (
@@ -128,7 +148,24 @@ export default function DonorDetail() {
               {donor_info?.blood_type || "N/A"}
             </span>
           </div>
+          <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate(`/donor-management/${donorId}/edit`)}
+            className="text-sm px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Edit
+          </button>
+
+          <button
+            onClick={() => handleDelete()}
+            className="text-sm px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Delete
+          </button>
         </div>
+
+        </div>
+        
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Basic Information */}
