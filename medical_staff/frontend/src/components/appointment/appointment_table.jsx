@@ -1,5 +1,5 @@
 "use client"
-import StatusButton from "./status"
+import StatusDropdown from "./status"
 
 const AppointmentTable = ({ appointments, onStatusChange, onAppointmentClick }) => {
   return (
@@ -33,10 +33,9 @@ const AppointmentTable = ({ appointments, onStatusChange, onAppointmentClick }) 
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{appointment.dob}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{appointment.bloodType}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <StatusButton
-                    status={appointment.status}
-                    onStatusChange={onStatusChange}
-                    appointmentId={appointment.id}
+                  <StatusDropdown
+                    appointment={appointment}
+                    onStatusUpdate={onStatusChange}
                   />
                 </td>
               </tr>

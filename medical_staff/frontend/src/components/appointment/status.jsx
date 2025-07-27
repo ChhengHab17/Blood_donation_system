@@ -3,6 +3,15 @@ import React, { useState } from 'react';
 const StatusDropdown = ({ appointment, onStatusUpdate }) => {
   const [isOpen, setIsOpen] = useState(false);
 
+  // Add null/undefined check for appointment
+  if (!appointment) {
+    return (
+      <div className="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">
+        Loading...
+      </div>
+    );
+  }
+
   // Get status button styling
   const getStatusButtonClass = (status) => {
     const baseClass = "px-3 py-1 rounded-full text-sm font-medium transition-colors duration-200 cursor-pointer ";
@@ -17,7 +26,9 @@ const StatusDropdown = ({ appointment, onStatusUpdate }) => {
   };
 
   const handleStatusChange = (newStatus) => {
-    onStatusUpdate(appointment.id, newStatus);
+    if (appointment && appointment.id) {
+      onStatusUpdate(appointment.id, newStatus);
+    }
     setIsOpen(false);
   };
 
@@ -36,9 +47,9 @@ const StatusDropdown = ({ appointment, onStatusUpdate }) => {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={getStatusButtonClass(appointment.status)}
+        className={getStatusButtonClass(appointment.status || 'no status')}
       >
-        {getStatusText(appointment.status)}
+        {getStatusText(appointment.status || 'no status')}
       </button>
       
       {isOpen && (
