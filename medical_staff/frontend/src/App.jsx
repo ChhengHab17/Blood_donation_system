@@ -6,6 +6,7 @@ import BloodInventoryPage from './pages/BloodInventory'
 import DonorManagementPage from './pages/DonorManagement'
 import DonorDetail from './pages/DonorDetail'
 import EditDonor from './pages/EditDonor'
+import CreateDonor from './pages/CreateDonor'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -20,7 +21,8 @@ function App() {
         <Route path='/donor-management' element={<DonorManagementPage />} />
         <Route path="/donor-management/:donorId/details" element={<DonorDetail />} />
         <Route path='/donor-management/:donorId/edit' element={<EditDonor />} />
-
+        <Route path='/create-donor' element={<CreateDonor />} />
+        {/* Add more routes as needed */}
       </Routes>
     </Router>
   )

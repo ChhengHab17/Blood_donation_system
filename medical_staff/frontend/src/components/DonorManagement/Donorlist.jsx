@@ -35,7 +35,7 @@ const handleRowClick = (donor) => {
 }
   const handleAddDonor = () => {
     console.log("Add donor clicked")
-    // Implement your add donor logic or navigation here
+    navigate("/create-donor")
   }
 
   if (loading) {
