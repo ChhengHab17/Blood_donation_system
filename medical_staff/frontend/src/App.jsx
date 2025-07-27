@@ -13,7 +13,7 @@ function App() {
   return (
       <Router>
           <Routes>
-              <Route path='/blood-request' element={<BloodRequestPage />} />
+              <Route path='/center-request' element={<BloodRequestPage />} />
               <Route path='/report' element={<ReportPage />} />
           </Routes>
       </Router>
