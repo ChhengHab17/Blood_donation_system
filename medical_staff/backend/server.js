@@ -6,6 +6,8 @@ import { donorRouter } from './routes/donorRoutes.js';
 import { inventoryRouter } from './routes/inventoryRoutes.js';
 import { sequelize } from './models/index.js';
 import { verifyToken } from './middleware/authMiddleware.js';
+import appointmentRouter from './routes/appointmentRoutes.js';
+import requestRouter from './routes/bloodRequestRoutes.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -18,6 +20,8 @@ app.use('/api/report',verifyToken, reportRouter);
 app.use('/api',verifyToken, centerRequestRouter);
 app.use('/api/donors',verifyToken, donorRouter);
 app.use('/api/inventory',verifyToken, inventoryRouter);
+app.use('/api/appointments',verifyToken, appointmentRouter);
+app.use('/api/blood-requests',verifyToken, requestRouter);
 // Test database connection
 sequelize.authenticate()
   .then(() => {

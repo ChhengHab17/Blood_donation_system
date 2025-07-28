@@ -1,5 +1,6 @@
 import {useState, useEffect} from "react";
 import "./App.css";
+import CenterRequestPage from "./pages/CenterRequestPage";
 import BloodRequestPage from "./pages/BloodRequestPage";
 import ReportPage from "./pages/ReportPage";
 import Login from "./pages/loginPage";
@@ -9,6 +10,7 @@ import DonorManagementPage from "./pages/DonorManagement";
 import DonorDetailPage from "./pages/DonorDetail";
 import EditDonorPage from "./pages/EditDonor";
 import CreateDonorPage from "./pages/CreateDonor";
+import AppointmentPage from "./pages/AppointmentPage";
 import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 
 function App() {
@@ -31,7 +33,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/center-request" element={<BloodRequestPage />} />
+        <Route path="/center-request" element={<CenterRequestPage />} />
         <Route path="/report" element={<ReportPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
@@ -46,6 +48,8 @@ function App() {
         />
         <Route path="/donor-management/:donorId/edit" element={<EditDonorPage />} />
         <Route path="/create-donor" element={<CreateDonorPage />} />
+        <Route path="/appointment" element={<AppointmentPage />} />
+
       </Routes>
     </Router>
   );

@@ -46,6 +46,19 @@ export default function InventoryTable() {
     fetchInventoryData(page, activeFilter);
   }, [page, activeFilter]);
 
+  // Listen for inventory refresh events
+  useEffect(() => {
+    const handleInventoryRefresh = () => {
+      refreshInventory();
+    };
+
+    window.addEventListener('inventoryRefresh', handleInventoryRefresh);
+
+    return () => {
+      window.removeEventListener('inventoryRefresh', handleInventoryRefresh);
+    };
+  }, []);
+
   const handleFilterApply = (filter) => {
     if (!filter) {
       setActiveFilter(null);

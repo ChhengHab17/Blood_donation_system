@@ -1,4 +1,4 @@
-import { User, BloodType, EligibilityRecord, Appointment, DonationCenter, DonationRecord, MedicalStaff, BloodRequest } from '../models/index.js';
+import { User, BloodType, EligibilityRecord, Appointment, DonationCenter, DonationRecord, MedicalStaff, BloodRequest, Blood, BloodInventory } from '../models/index.js';
 
 export async function createDonorService(data, staff_id, center_id) {
   const {
@@ -69,7 +69,7 @@ export async function createDonorService(data, staff_id, center_id) {
   const donationStatus = is_eligible ? 'Accepted' : 'Rejected';
 
   // Create a donation record for the new donor
-  await DonationRecord.create({
+  const donationRecord = await DonationRecord.create({
     user_id: user.user_id,
     staff_id,
     center_id,
@@ -77,6 +77,11 @@ export async function createDonorService(data, staff_id, center_id) {
     volume: donationVolume,
     status: donationStatus
   });
+
+  // If donation is accepted, create blood inventory
+  if (donationStatus === 'Accepted' && donationVolume > 0) {
+    await createBloodInventoryFromDonation(donationRecord, user.blood_type_id, center_id);
+  }
 
   return {
     message: 'Donor, donation, and eligibility record created successfully',
@@ -250,12 +255,45 @@ export async function getDonorDetailsService(userId) {
       limit: 5
     });
   
-    return {
-      user,
-      lastDonation,
-      totalDonations,
-      appointments,
-      bloodRequests
-    };
+      return {
+    user,
+    lastDonation,
+    totalDonations,
+    appointments,
+    bloodRequests
+  };
+}
+
+// Helper function to create blood inventory from donation
+async function createBloodInventoryFromDonation(donationRecord, bloodTypeId, centerId) {
+  try {
+    // Calculate expiry date (42 days from collection date)
+    const collectedDate = new Date(donationRecord.date);
+    const expiryDate = new Date(collectedDate);
+    expiryDate.setDate(expiryDate.getDate() + 42); // Blood expires in 42 days
+
+    // Create blood record
+    const bloodRecord = await Blood.create({
+      donation_id: donationRecord.donation_id,
+      blood_type_id: bloodTypeId,
+      volume: donationRecord.volume,
+      collected_date: donationRecord.date,
+      expiry_date: expiryDate.toISOString().split('T')[0] // Format as YYYY-MM-DD
+    });
+
+    // Create blood inventory record
+    await BloodInventory.create({
+      blood_id: bloodRecord.blood_id,
+      center_id: centerId,
+      quantity_units: 1, // Each donation creates 1 unit
+      status: 'Available',
+      last_update: new Date().toISOString().split('T')[0] // Current date
+    });
+
+    console.log(`Blood inventory created for donation ${donationRecord.donation_id}`);
+  } catch (error) {
+    console.error('Error creating blood inventory:', error);
+    throw new Error(`Failed to create blood inventory: ${error.message}`);
   }
+}
   

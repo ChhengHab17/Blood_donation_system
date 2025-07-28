@@ -174,7 +174,7 @@ export default function SignUp() {
             />
           </div>
           {/* role */}
-          <div className="flex flex-row gap-4">
+          <div className="grid grid-flow-col gap-4">
             <div>
                 <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-2">
                 Role
@@ -186,7 +186,6 @@ export default function SignUp() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                 required
                 >
-                <option value="admin">Admin</option>
                 <option value="staff">Staff</option>
                 </select>
             </div>

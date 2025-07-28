@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useImperativeHandle, useRef } from 'react'
 import axios from 'axios'
 
-export default function InventoryTable1() {
+const InventoryTable1 = React.forwardRef((props, ref) => {
   const [inventoryData, setInventoryData] = useState([])
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -43,6 +43,32 @@ export default function InventoryTable1() {
   useEffect(() => {
     fetchInventory(1, false)
   }, [])
+
+  // Listen for inventory refresh events
+  useEffect(() => {
+    const handleInventoryRefresh = () => {
+      refreshInventory();
+    };
+
+    window.addEventListener('inventoryRefresh', handleInventoryRefresh);
+
+    return () => {
+      window.removeEventListener('inventoryRefresh', handleInventoryRefresh);
+    };
+  }, []);
+
+  // Add refresh function that can be called from parent
+  const refreshInventory = () => {
+    setPage(1)
+    setInventoryData([])
+    setHasMore(true)
+    fetchInventory(1, false)
+  }
+
+  // Expose refresh function to parent component
+  useImperativeHandle(ref, () => ({
+    refresh: refreshInventory
+  }))
 
   const handleLoadMore = () => {
     if (!loadingMore && hasMore) {
@@ -174,4 +200,6 @@ export default function InventoryTable1() {
       </div>
     </div>
   )
-}
+})
+
+export default InventoryTable1

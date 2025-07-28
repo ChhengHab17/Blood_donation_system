@@ -163,3 +163,118 @@ export const getDonationCenters = async () => {
         throw error;
     }
 }
+// Helper function to handle API responses
+const handleResponse = async (response) => {
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || errorData.error || `HTTP error! status: ${response.status}`);
+  }
+  return response.json();
+};
+
+// Appointment API functions
+export const appointmentAPI = {
+  // Get all appointments
+  getAll: async (page = 1, limit = 10, status, search) => {
+    const params = {};
+    if (page) params.page = page;
+    if (limit) params.limit = limit;
+    if (status) params.status = status;
+    if (search) params.search = search;
+    const response = await axios.get(`${API_URL}/appointments`, { params });
+    return response.data;
+  },
+
+  // Get appointment by ID
+  getById: async (id) => {
+    const response = await axios.get(`${API_URL}/appointments/${id}`);
+    return response.data;
+  },
+
+  // Create new appointment
+  create: async (appointmentData) => {
+    const response = await axios.post(`${API_URL}/appointments`, appointmentData);
+    return response.data;
+  },
+
+  // Update appointment
+  update: async (id, updateData) => {
+    const response = await axios.put(`${API_URL}/appointments/${id}`, updateData);
+    return response.data;
+  },
+
+  // Update appointment status
+  updateStatus: async (id, status) => {
+    const response = await axios.patch(`${API_URL}/appointments/${id}/status`, { status });
+    return response.data;
+  },
+
+  // Delete appointment
+  delete: async (id) => {
+    const response = await axios.delete(`${API_URL}/appointments/${id}`);
+    return response.data;
+  },
+
+  // Get appointment statistics
+  getStats: async () => {
+    const response = await axios.get(`${API_URL}/appointments/stats/overview`);
+    return response.data;
+  },
+};
+
+// Blood Request API functions
+export const bloodRequestAPI = {
+  // Get all blood requests
+  getAll: async (page = 1, limit = 10, status, requestType, search) => {
+    const params = {};
+    if (page) params.page = page;
+    if (limit) params.limit = limit;
+    if (status) params.status = status;
+    if (requestType) params.requestType = requestType;
+    if (search) params.search = search;
+    const response = await axios.get(`${API_URL}/blood-requests`, { params });
+    return response.data;
+  },
+
+  // Get blood request by ID
+  getById: async (id) => {
+    const response = await axios.get(`${API_URL}/blood-requests/${id}`);
+    return response.data;
+  },
+
+  // Create new blood request
+  create: async (bloodRequestData) => {
+    const response = await axios.post(`${API_URL}/blood-requests`, bloodRequestData);
+    return response.data;
+  },
+
+  // Update blood request
+  update: async (id, updateData) => {
+    const response = await axios.put(`${API_URL}/blood-requests/${id}`, updateData);
+    return response.data;
+  },
+
+  // Update blood request status
+  updateStatus: async (id, status) => {
+    const response = await axios.patch(`${API_URL}/blood-requests/${id}/status`, { status });
+    return response.data;
+  },
+
+  // Delete blood request
+  delete: async (id) => {
+    const response = await axios.delete(`${API_URL}/blood-requests/${id}`);
+    return response.data;
+  },
+
+  // Get blood request statistics
+  getStats: async () => {
+    const response = await axios.get(`${API_URL}/blood-requests/stats/overview`);
+    return response.data;
+  },
+};
+
+// Health check
+export const healthCheck = async () => {
+  const response = await axios.get(`${API_URL}/health`);
+  return response.data;
+}; 

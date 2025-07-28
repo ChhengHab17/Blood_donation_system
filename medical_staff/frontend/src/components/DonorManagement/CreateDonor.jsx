@@ -143,6 +143,9 @@ export default function CreateDonorAccount() {
           text: `Donor account created successfully! ${data.message || ""}`,
         })
 
+        // Trigger inventory refresh event
+        window.dispatchEvent(new CustomEvent('inventoryRefresh'));
+
         // Reset form on success
         setFormData({
           first_name: "",
