@@ -96,6 +96,10 @@ export default function BloodRequestForm() {
           onSelect={(staff) => {
             console.log("Form received staff:", staff) // Debug log
             updateFormData("medicalStaffId", staff.id)
+            if (staff.phone_num) {
+              console.log("Setting phone number to:", staff.phone_num)
+              updateFormData("phoneNumber", staff.phone_num)
+            }
           }}
         />
 
@@ -106,6 +110,7 @@ export default function BloodRequestForm() {
           required
           value={formData.phoneNumber}
           onChange={(value) => updateFormData("phoneNumber", value)}
+          disabled={!!formData.medicalStaffId}
         />
 
         <FormInput

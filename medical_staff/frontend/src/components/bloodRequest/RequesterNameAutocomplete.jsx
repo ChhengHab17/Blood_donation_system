@@ -48,8 +48,8 @@ export default function RequesterNameAutocomplete({ value, onChange, onSelect })
 
   const handleSelect = (staff) => {
     console.log("Selected staff:", staff) // Debug log
-    onChange(staff.name)
-    onSelect(staff) // send back full staff object (id, name)
+    onChange(staff.name) // Set the input field to the selected staff's full name
+    onSelect(staff) // send back full staff object (id, name, phone_num)
     setShowSuggestions(false)
   }
 
@@ -81,11 +81,15 @@ export default function RequesterNameAutocomplete({ value, onChange, onSelect })
         <ul className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow z-10 max-h-48 overflow-y-auto">
           {suggestions.map((staff) => (
             <li
-              key={staff.id}
-              onClick={() => handleSelect(staff)}
+              key={staff.id || staff.staff_id}
+              onClick={() => handleSelect({
+                id: staff.staff_id || staff.id,
+                name: staff.first_name && staff.last_name ? `${staff.first_name} ${staff.last_name}` : staff.name,
+                phone_num: staff.phone_num || ""
+              })}
               className="px-4 py-2 cursor-pointer hover:bg-gray-100"
             >
-              {staff.name}
+              {staff.first_name && staff.last_name ? `${staff.first_name} ${staff.last_name}` : staff.name}
             </li>
           ))}
         </ul>

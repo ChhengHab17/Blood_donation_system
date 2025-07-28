@@ -17,7 +17,7 @@ export default function Login() {
         localStorage.setItem('token', response.token)
       }
       alert("Login successful")
-      navigate("/report")
+      navigate("/donor-management")
     } catch (error) {
       console.error("Login error:", error)
       alert("Login failed: " + (error.response?.data?.message || error.message))

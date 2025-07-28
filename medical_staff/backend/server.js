@@ -1,8 +1,11 @@
 import express from 'express';
 import cors from 'cors';
-import { userRouter, centerRequestRouter } from './routes/reportRoutes.js';
+import { reportRouter, centerRequestRouter } from './routes/reportRoutes.js';
 import { authRouter } from './routes/authRoutes.js';
+import { donorRouter } from './routes/donorRoutes.js';
+import { inventoryRouter } from './routes/inventoryRoutes.js';
 import { sequelize } from './models/index.js';
+import { verifyToken } from './middleware/authMiddleware.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -10,10 +13,11 @@ const app = express();
 app.use(cors());
 
 app.use(express.json());
-app.use('/api/report', userRouter);
-app.use('/api/center-request', centerRequestRouter);
 app.use('/auth', authRouter);
-
+app.use('/api/report',verifyToken, reportRouter);
+app.use('/api',verifyToken, centerRequestRouter);
+app.use('/api/donors',verifyToken, donorRouter);
+app.use('/api/inventory',verifyToken, inventoryRouter);
 // Test database connection
 sequelize.authenticate()
   .then(() => {

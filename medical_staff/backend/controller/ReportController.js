@@ -144,7 +144,8 @@ export const searchName = async (req, res) => {
       id: staff.staff_id,
       name: `${staff.first_name} ${staff.last_name}`,
       first_name: staff.first_name,
-      last_name: staff.last_name
+      last_name: staff.last_name,
+      phone_num: staff.phone_num // include phone_num
     }));
     
     res.json({ data: formatted });

@@ -10,19 +10,18 @@ import {
   filterBloodInventory,
   searchName,
 } from "../controller/ReportController.js";
-import { verifyToken } from "../middleware/authMiddleware.js";
 
-export const userRouter = new Router();
+export const reportRouter = new Router();
 
-userRouter.get("/user", verifyToken, getUser);
-userRouter.get("/blood-inventory", verifyToken, getBloodInventory);
-userRouter.get("/blood", verifyToken, getTotalVolumeByBloodType);
-userRouter.get("/donation-count", verifyToken, getTotalDonationCounts);
-userRouter.get("/pending-request", verifyToken, getPendingRequest);
-userRouter.post("/filter-donors", verifyToken, filterDonors);
-userRouter.post("/filter-blood-inventory", verifyToken, filterBloodInventory);
-userRouter.get("/search-name", verifyToken, searchName);
+reportRouter.get("/user", getUser);
+reportRouter.get("/blood-inventory", getBloodInventory);
+reportRouter.get("/blood", getTotalVolumeByBloodType);
+reportRouter.get("/donation-count", getTotalDonationCounts);
+reportRouter.get("/pending-request", getPendingRequest);
+reportRouter.post("/filter-donors", filterDonors);
+reportRouter.post("/filter-blood-inventory", filterBloodInventory);
+reportRouter.get("/search-name", searchName);
 
 
 export const centerRequestRouter = new Router();
-centerRequestRouter.post("/center-request", verifyToken, createBloodRequest);
+centerRequestRouter.post("/center-request", createBloodRequest);

@@ -61,8 +61,8 @@ export const authenticateUser = async (email, password) => {
         if(!valid){
             throw new Error('Invalid credentials');
         }
-        // Include center_id and role in the JWT payload
-        const token = jwt.sign({email, center_id: user.center_id, role: user.role}, JWT_SECRET, {expiresIn: '1h'});
+        // Include staff_id, center_id, and role in the JWT payload
+        const token = jwt.sign({email, staff_id: user.staff_id, center_id: user.center_id, role: user.role}, JWT_SECRET, {expiresIn: '1h'});
         return {success: true, message: 'Login successful', token};
     }catch(error){
         console.error('Error authenticating user:', error);

@@ -58,7 +58,7 @@ export const getBloodInventories = async (limit, page, center_id) => {
 
     // Get total count of valid inventory records for this center
     const total = await BloodInventory.count({
-      where: { center_id },
+      where: { center_id, status: 'Available' },
       include: [
         {
           model: Blood,
@@ -76,7 +76,7 @@ export const getBloodInventories = async (limit, page, center_id) => {
     // Get paginated inventory records for this center
     const bloodInventory = await BloodInventory.findAll({
       attributes: ["inventory_id", "quantity_units"],
-      where: { center_id },
+      where: { center_id, status: 'Available' },
       include: [
         {
           model: Blood,
@@ -124,14 +124,11 @@ export const getTotalVolumeByBloodTypeService = async (center_id) => {
     const results = await sequelize.query(`
       SELECT
         bt.type AS blood_type,
-        COALESCE(SUM(b.volume), 0) AS total_volume
+        COALESCE(SUM(b.volume * bi.quantity_units), 0) AS total_volume
       FROM blood_type bt
-      LEFT JOIN (
-        SELECT b.*
-        FROM blood b
-        JOIN donation_record dr ON b.donation_id = dr.donation_id
-        WHERE dr.center_id = :center_id AND b.expiry_date > NOW()
-      ) b ON bt.type_id = b.blood_type_id
+      LEFT JOIN blood b ON bt.type_id = b.blood_type_id
+      LEFT JOIN blood_inventory bi ON b.blood_id = bi.blood_id
+      WHERE (bi.center_id = :center_id AND bi.status = 'Available') OR bi.blood_id IS NULL
       GROUP BY bt.type, bt.type_id
       ORDER BY bt.type
     `, {
@@ -143,7 +140,7 @@ export const getTotalVolumeByBloodTypeService = async (center_id) => {
       totalVolume: parseInt(item.total_volume) || 0
     }));
   } catch (error) {
-    console.error("Error fetching total volume by blood type (raw):", error);
+    console.error("Error fetching total volume by blood type (inventory):", error);
     throw error;
   }
 };
@@ -401,7 +398,7 @@ export const searchByName = async (nameQuery) => {
           )
         ]
       },
-      attributes: ['staff_id', 'first_name', 'last_name'],
+      attributes: ['staff_id', 'first_name', 'last_name', 'phone_num'],
       limit: 10,
       order: [
         ['first_name', 'ASC'],

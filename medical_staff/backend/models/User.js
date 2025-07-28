@@ -20,7 +20,7 @@ const User = sequelize.define('User', {
   },
   password: {
     type: DataTypes.STRING(255),
-    allowNull: false,
+    allowNull: true,
     field: 'password'
   },
   gender: {
@@ -31,7 +31,7 @@ const User = sequelize.define('User', {
   dob: {
     type: DataTypes.DATEONLY,
     allowNull: false,
-    field: 'DoB'
+    field: 'dob'
   },
   blood_type_id: {
     type: DataTypes.INTEGER,
