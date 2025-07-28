@@ -76,7 +76,6 @@ export default function CreateDonorAccount() {
     // Required field validation
     if (!formData.first_name.trim()) newErrors.first_name = "First name is required"
     if (!formData.last_name.trim()) newErrors.last_name = "Last name is required"
-    if (!formData.password) newErrors.password = "Password is required"
     if (!formData.gender) newErrors.gender = "Gender is required"
     if (!formData.DoB) newErrors.DoB = "Date of birth is required"
     if (!formData.blood_type_id) newErrors.blood_type_id = "Blood type is required"
@@ -90,9 +89,9 @@ export default function CreateDonorAccount() {
       newErrors.email = "Please enter a valid email address"
     }
 
-    // Password validation
-    if (formData.password && formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters"
+    // Password validation (optional but if provided, must be at least 8 characters)
+    if (formData.password && formData.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters"
     }
 
     // Age validation (must be at least 18)
@@ -121,7 +120,7 @@ export default function CreateDonorAccount() {
     setMessage({ type: "", text: "" })
 
     try {
-      const response = await fetch("http://localhost:3001/api/donors", {
+      const response = await fetch("http://localhost:3000/api/donors", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -395,7 +394,7 @@ export default function CreateDonorAccount() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                      Password *
+                      Password (Optional)
                     </label>
                     <input
                       type="password"
@@ -405,10 +404,13 @@ export default function CreateDonorAccount() {
                       className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
                         errors.password ? "border-red-500" : "border-gray-300"
                       }`}
-                      placeholder="Enter password"
+                      placeholder="Enter password (optional)"
                       maxLength={255}
                     />
                     {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
+                    <p className="mt-1 text-sm text-gray-500">
+                      Leave blank if you don't want to set a password for this donor
+                    </p>
                   </div>
 
                   <div>

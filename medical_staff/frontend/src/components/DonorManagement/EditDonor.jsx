@@ -31,7 +31,7 @@ export default function EditDonor() {
     if (!donorId) return
 
     // Fetch donor data to pre-populate form
-    fetch(`http://localhost:3001/api/donors/${donorId}/details`)
+    fetch(`http://localhost:3000/api/donors/${donorId}/details`)
       .then((res) => {
         if (!res.ok) {
           throw new Error("Failed to fetch donor details")
@@ -42,13 +42,13 @@ export default function EditDonor() {
         const donorInfo = data.donor_info
         if (donorInfo) {
           setFormData({
-            name: donorInfo.name || "",
-            gender: donorInfo.gender || "",
-            date_of_birth: donorInfo.date_of_birth ? donorInfo.date_of_birth.split("T")[0] : "",
+            name: `${donorInfo.first_name} ${donorInfo.last_name}`.trim(),
+             gender: donorInfo.gender || "",
+            date_of_birth: donorInfo.dob ? donorInfo.dob.split("T")[0] : "",
             email: donorInfo.email || "",
-            phone_number: donorInfo.phone_number || "",
+            phone_number: donorInfo.phone_num || "",
             address: donorInfo.address || "",
-            blood_type: donorInfo.blood_type || "",
+            blood_type: donorInfo.BloodType?.type || "",
           })
         }
         setLoading(false)
@@ -120,7 +120,7 @@ export default function EditDonor() {
     setError(null)
 
     try {
-      const response = await fetch(`http://localhost:3001/api/donors/${donorId}`, {
+      const response = await fetch(`http://localhost:3000/api/donors/${donorId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -129,14 +129,15 @@ export default function EditDonor() {
       })
 
       if (!response.ok) {
-        throw new Error("Failed to update donor")
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to update donor")
       }
 
       setSuccessMessage("Donor information updated successfully!")
 
       // Redirect back to donor detail page after a short delay
       setTimeout(() => {
-        navigate(`/donor-management`)
+        navigate(`/donor-management/${donorId}/details`)
       }, 1500)
     } catch (err) {
       console.error("Error updating donor:", err)
@@ -147,7 +148,7 @@ export default function EditDonor() {
   }
 
   const handleCancel = () => {
-    navigate(`/donor-detail/${donorId}`)
+    navigate(`/donor-management/${donorId}/details`)
   }
 
   if (loading) {

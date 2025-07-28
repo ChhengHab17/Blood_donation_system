@@ -14,7 +14,7 @@ export default function DonorDetail() {
     if (!donorId) return
 
     // Fetch comprehensive donor data
-    fetch(`http://localhost:3001/api/donors/${donorId}/details`)
+    fetch(`http://localhost:3000/api/donors/${donorId}/details`)
       .then((res) => {
         if (!res.ok) {
           throw new Error("Failed to fetch donor details")
@@ -66,20 +66,26 @@ export default function DonorDetail() {
     })
   }
 
-  const formatDateTime = (dateString, timeString) => {
-    if (!dateString) return "N/A"
-    const date = new Date(dateString).toLocaleDateString("en-US", {
+  const formatDateTime = (dateTimeString) => {
+    if (!dateTimeString) return "N/A"
+    const date = new Date(dateTimeString)
+    const dateFormatted = date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
     })
-    return timeString ? `${date} at ${timeString}` : date
+    const timeFormatted = date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true
+    })
+    return `${dateFormatted} at ${timeFormatted}`
   }
   const handleDelete = () => {
   const confirmed = window.confirm("Are you sure you want to delete this donor?");
   if (!confirmed) return;
 
-  fetch(`http://localhost:3001/api/donors/${donorId}`, {
+  fetch(`http://localhost:3000/api/donors/${donorId}`, {
     method: "DELETE",
   })
     .then((res) => {
@@ -140,12 +146,12 @@ export default function DonorDetail() {
               </svg>
               Back to Donors
             </button>
-            <h1 className="text-3xl font-semibold text-[#000000]">{donor_info?.name || "Unknown Donor"}</h1>
+            <h1 className="text-3xl font-semibold text-[#000000]">{`${donor_info?.first_name} ${donor_info?.last_name}`}</h1>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-500">Blood Type:</span>
             <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">
-              {donor_info?.blood_type || "N/A"}
+              {donor_info?.BloodType.type}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -174,7 +180,7 @@ export default function DonorDetail() {
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600">Full Name:</span>
-                <span className="text-[#1d2433] font-medium">{donor_info?.name || "N/A"}</span>
+                <span className="text-[#1d2433] font-medium">{`${donor_info?.first_name} ${donor_info?.last_name}`}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Gender:</span>
@@ -182,7 +188,7 @@ export default function DonorDetail() {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Date of Birth:</span>
-                <span className="text-[#1d2433]">{formatDate(donor_info?.date_of_birth)}</span>
+                <span className="text-[#1d2433]">{formatDate(donor_info?.dob)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Email:</span>
@@ -190,7 +196,7 @@ export default function DonorDetail() {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Phone:</span>
-                <span className="text-[#1d2433]">{donor_info?.phone_number || "N/A"}</span>
+                <span className="text-[#1d2433]">{donor_info?.phone_num || "N/A"}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Address:</span>
@@ -258,7 +264,7 @@ export default function DonorDetail() {
                   {appointments.map((appointment, index) => (
                     <tr key={index} className="hover:bg-[#f8f9fc]">
                       <td className="px-4 py-3 text-sm text-[#1d2433]">
-                        {formatDateTime(appointment.appointment_date, appointment.appointment_time)}
+                        {formatDateTime(appointment.date_time)}
                       </td>
                       <td className="px-4 py-3">
                         <span
@@ -267,7 +273,7 @@ export default function DonorDetail() {
                           {appointment.status || "N/A"}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-[#1d2433]">{appointment.donation_center_name || "N/A"}</td>
+                      <td className="px-4 py-3 text-sm text-[#1d2433]">{appointment.DonationCenter.name}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -296,17 +302,17 @@ export default function DonorDetail() {
                 <tbody className="divide-y divide-[#f1f3f9]">
                   {donation_history.map((donation, index) => (
                     <tr key={index} className="hover:bg-[#f8f9fc]">
-                      <td className="px-4 py-3 text-sm text-[#1d2433]">{formatDate(donation.donation_date)}</td>
-                      <td className="px-4 py-3 text-sm text-[#1d2433]">{donation.volume_donated || "N/A"} mL</td>
+                      <td className="px-4 py-3 text-sm text-[#1d2433]">{formatDate(donation.date)}</td>
+                      <td className="px-4 py-3 text-sm text-[#1d2433]">{donation.volume || "N/A"} mL</td>
                       <td className="px-4 py-3">
                         <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(donation.donation_status)}`}
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(donation.status)}`}
                         >
-                          {donation.donation_status || "N/A"}
+                          {donation.status}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-[#1d2433]">{donation.staff_name || "N/A"}</td>
-                      <td className="px-4 py-3 text-sm text-[#1d2433]">{donation.donation_center_name || "N/A"}</td>
+                      <td className="px-4 py-3 text-sm text-[#1d2433]">{`${donation.MedicalStaff.first_name} ${donation.MedicalStaff.last_name}`}</td>
+                      <td className="px-4 py-3 text-sm text-[#1d2433]">{donation.DonationCenter.name || "N/A"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -335,15 +341,15 @@ export default function DonorDetail() {
                   {blood_requests.map((request, index) => (
                     <tr key={index} className="hover:bg-[#f8f9fc]">
                       <td className="px-4 py-3 text-sm text-[#1d2433]">{formatDate(request.request_date)}</td>
-                      <td className="px-4 py-3 text-sm text-[#1d2433]">{request.quantity_requested || "N/A"} units</td>
+                      <td className="px-4 py-3 text-sm text-[#1d2433]">{request.quantity_units} units</td>
                       <td className="px-4 py-3">
                         <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(request.request_status)}`}
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}
                         >
-                          {request.request_status || "N/A"}
+                          {request.status}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-[#1d2433]">{request.staff_name || "N/A"}</td>
+                      <td className="px-4 py-3 text-sm text-[#1d2433]">{`${request.MedicalStaff.first_name} ${request.MedicalStaff.last_name}`}</td>
                     </tr>
                   ))}
                 </tbody>

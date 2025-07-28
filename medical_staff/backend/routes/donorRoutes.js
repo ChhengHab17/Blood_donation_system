@@ -1,17 +1,13 @@
-const express = require('express');
+import express from 'express';
+import { getDonors, getDonorDetails, createDonor, deleteDonor, updateDonor } from '../controller/donorControllers.js';
+
 const router = express.Router();
 
-const donorController = require('../controller/donorController');
-const donorDetailController = require("../controller/donordetailController");
-const deletedDonorController = require('../controller/deletedonorController');
-const { updateDonor } = require('../controller/updateDonorController');
-const { createDonor } = require('../controller/createdonorController'); // ✅ Correct import
-
 // Routes
-router.get('/', donorController.getDonors);
-router.get('/:id/details', donorDetailController.getDonorDetails);
-router.delete('/:id', deletedDonorController.deleteDonor);
+router.get('/', getDonors);
+router.get('/:id/details', getDonorDetails);
+router.delete('/:id', deleteDonor);
 router.put('/:id', updateDonor);
-router.post('/', createDonor); // ✅ Now this works
+router.post('/', createDonor);
 
-module.exports = router;
+export default router;
