@@ -41,6 +41,14 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
+
+
+
+
+
+
+
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Server error:', err.stack);

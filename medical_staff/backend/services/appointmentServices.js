@@ -6,43 +6,109 @@ export const getAllAppointments = async (page = 1, limit = 10, status, search) =
   try {
     console.log('getAllAppointments called with:', { page, limit, status, search });
     
-    const whereClause = {};
+    // Use raw SQL query with proper joins to get complete data
+    const whereConditions = [];
+    const queryParams = [];
+    
     if (status) {
-      whereClause.status = status;
-      console.log('Adding status filter:', status);
+      whereConditions.push('a.status = $' + (queryParams.length + 1));
+      queryParams.push(status);
     }
-
+    
+    // Add search functionality
+    if (search) {
+      // Check if search is a number (ID search) or text (name search)
+      const isNumber = !isNaN(search) && search.trim() !== '';
+      
+      if (isNumber) {
+        // Search by appointment_id (exact match)
+        whereConditions.push(`a.appointment_id = $${queryParams.length + 1}`);
+        queryParams.push(parseInt(search));
+      } else {
+        // Search by name (partial match)
+        const searchCondition = `(
+          u.first_name ILIKE $${queryParams.length + 1} OR
+          u.last_name ILIKE $${queryParams.length + 1}
+        )`;
+        whereConditions.push(searchCondition);
+        queryParams.push(`%${search}%`);
+      }
+    }
+    
+    const whereClause = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
     const offset = (parseInt(page) - 1) * parseInt(limit);
-
-    const { count, rows: appointments } = await Appointment.findAndCountAll({
-      where: whereClause,
-      order: [['date_time', 'DESC']],
-      limit: parseInt(limit),
-      offset: offset
+    
+    const query = `
+      SELECT 
+        a.appointment_id,
+        a.user_id,
+        a.center_id,
+        a.date_time,
+        a.status,
+        u.first_name,
+        u.last_name,
+        u.email,
+        u.phone_num,
+        u.gender,
+        u.DoB,
+        u.address,
+        u.blood_type_id,
+        bt.type as blood_type,
+        dc.name as center_name,
+        dc.address as center_address,
+        dc.city as center_city
+      FROM appointment a
+      LEFT JOIN users u ON a.user_id = u.user_id
+      LEFT JOIN blood_type bt ON u.blood_type_id = bt.type_id
+      LEFT JOIN donation_center dc ON a.center_id = dc.center_id
+      ${whereClause}
+      ORDER BY a.date_time DESC
+      LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}
+    `;
+    
+    queryParams.push(parseInt(limit), offset);
+    
+    const appointments = await sequelize.query(query, {
+      bind: queryParams,
+      type: sequelize.QueryTypes.SELECT
     });
+    
+    // Get total count
+    const countQuery = `
+      SELECT COUNT(*) as count
+      FROM appointment a
+      LEFT JOIN users u ON a.user_id = u.user_id
+      ${whereClause}
+    `;
+    
+    const countResult = await sequelize.query(countQuery, {
+      bind: queryParams.slice(0, -2), // Remove limit and offset
+      type: sequelize.QueryTypes.SELECT
+    });
+    
+    const count = countResult[0].count;
 
-    // Transform appointments to include user and center data for frontend compatibility
+    // Transform appointments with complete data
     const transformedAppointments = appointments.map(appointment => {
-      // Use the exact status from database (no mapping needed)
       return {
         appointment_id: appointment.appointment_id,
         user_id: appointment.user_id,
         center_id: appointment.center_id,
         date_time: appointment.date_time,
         status: appointment.status || 'No show',
-      // Mock user data for frontend compatibility
-      first_name: `User ${appointment.user_id}`,
-      last_name: 'Doe',
-      email: `user${appointment.user_id}@example.com`,
-      phone_num: `+1-555-${String(appointment.user_id).padStart(4, '0')}`,
-      gender: appointment.user_id % 2 === 0 ? 'Female' : 'Male',
-      DoB: new Date(1990, 0, 1 + appointment.user_id).toISOString().split('T')[0],
-      address: `${appointment.user_id} Main Street`,
-        blood_type: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'][appointment.user_id % 8],
-        // Mock center data
-        center_name: 'Central Blood Bank',
-        center_address: '123 Main Street',
-        center_city: 'New York'
+        // User data
+        first_name: appointment.first_name || `User ${appointment.user_id}`,
+        last_name: appointment.last_name || 'Doe',
+        email: appointment.email || `user${appointment.user_id}@example.com`,
+        phone_num: appointment.phone_num || `+1-555-${String(appointment.user_id).padStart(4, '0')}`,
+        gender: appointment.gender || (appointment.user_id % 2 === 0 ? 'Female' : 'Male'),
+        DoB: appointment.DoB ? new Date(appointment.DoB).toLocaleDateString('en-GB') : new Date(1990, 0, 1 + appointment.user_id).toLocaleDateString('en-GB'),
+        address: appointment.address || `${appointment.user_id} Main Street`,
+        blood_type: appointment.blood_type || ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'][appointment.user_id % 8],
+        // Center data
+        center_name: appointment.center_name || 'Central Blood Bank',
+        center_address: appointment.center_address || '123 Main Street',
+        center_city: appointment.center_city || 'New York'
       };
     });
 

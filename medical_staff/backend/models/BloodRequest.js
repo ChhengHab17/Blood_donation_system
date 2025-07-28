@@ -13,36 +13,26 @@ const BloodRequest = sequelize.define('BloodRequest', {
     allowNull: true,
     field: 'user_id'
   },
-  center_id: {
+  staff_id: {
     type: DataTypes.INTEGER,
     allowNull: true,
-    field: 'center_id'
+    field: 'staff_id'
   },
-  blood_type_id: {
+  quantity_units: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    field: 'blood_type_id'
+    field: 'quantity_units'
   },
-  quantity: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    field: 'quantity'
-  },
-  date_request: {
+  request_date: {
     type: DataTypes.DATE,
     allowNull: false,
-    field: 'date_request'
+    field: 'request_date'
   },
   status: {
     type: DataTypes.STRING,
     allowNull: false,
     defaultValue: 'Pending',
     field: 'status'
-  },
-  request_type: {
-    type: DataTypes.ENUM('user', 'center'),
-    allowNull: false,
-    field: 'request_type'
   }
 }, {
   tableName: 'blood_request',

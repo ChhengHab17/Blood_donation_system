@@ -5,11 +5,11 @@ dotenv.config();
 const sequelize = new Sequelize(
   process.env.DB_NAME || 'blood_donation_system',
   process.env.DB_USER || 'postgres',
-  process.env.DB_PASSWORD || 'maViAbEfuXfjxAOcgxGTRWnsmZCxCdan',
+  process.env.DB_PASSWORD || '',
   {
     dialect: 'postgres',
-    host: process.env.DB_HOST || 'centerbeam.proxy.rlwy.net',
-    port: process.env.DB_PORT || '43047',
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || '5432',
     logging: false,
     pool: {
       max: 20,

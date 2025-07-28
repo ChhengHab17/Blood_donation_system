@@ -142,6 +142,14 @@ const BloodRequestDetailModal = ({ bloodRequest, isOpen, onClose, onStatusChange
             </div>
           </div>
 
+          {/* User Reason */}
+          <div className="bg-blue-50 rounded-lg p-4 mb-4">
+            <h4 className="text-md font-medium text-gray-900 mb-2">Request Reason</h4>
+            <p className="text-sm text-gray-700">
+              {bloodRequest.user_reason || 'No reason provided'}
+            </p>
+          </div>
+
           {/* Additional Information */}
           <div className="bg-gray-50 rounded-lg p-4">
             <h4 className="text-md font-medium text-gray-900 mb-2">Notes</h4>

@@ -17,23 +17,13 @@ User.hasMany(BloodRequest, {
   as: 'bloodRequests'
 });
 
-BloodRequest.belongsTo(DonationCenter, {
-  foreignKey: 'center_id',
-  as: 'center'
+BloodRequest.belongsTo(MedicalStaff, {
+  foreignKey: 'staff_id',
+  as: 'staff'
 });
 
-DonationCenter.hasMany(BloodRequest, {
-  foreignKey: 'center_id',
-  as: 'bloodRequests'
-});
-
-BloodRequest.belongsTo(BloodType, {
-  foreignKey: 'blood_type_id',
-  as: 'bloodType'
-});
-
-BloodType.hasMany(BloodRequest, {
-  foreignKey: 'blood_type_id',
+MedicalStaff.hasMany(BloodRequest, {
+  foreignKey: 'staff_id',
   as: 'bloodRequests'
 });
 
