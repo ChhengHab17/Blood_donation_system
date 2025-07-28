@@ -5,6 +5,7 @@ const AppointmentDetailModal = ({ appointment, isOpen, onClose, onStatusChange }
   if (!isOpen || !appointment) return null;
 
   const formatDate = (dateString) => {
+
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('en-GB', {
       year: 'numeric',
@@ -69,11 +70,11 @@ const AppointmentDetailModal = ({ appointment, isOpen, onClose, onStatusChange }
                 </div>
                 <div>
                   <span className="text-sm font-medium text-gray-500">Email:</span>
-                  <p className="text-sm text-gray-900">{appointment.email || 'N/A'}</p>
+                  <p className="text-sm text-gray-900">{appointment.originalData.email || 'N/A'}</p>
                 </div>
                 <div>
                   <span className="text-sm font-medium text-gray-500">Phone:</span>
-                  <p className="text-sm text-gray-900">{appointment.phone_num || 'N/A'}</p>
+                  <p className="text-sm text-gray-900">{appointment.originalData.phone_num || 'N/A'}</p>
                 </div>
                 <div>
                   <span className="text-sm font-medium text-gray-500">Gender:</span>
@@ -81,7 +82,7 @@ const AppointmentDetailModal = ({ appointment, isOpen, onClose, onStatusChange }
                 </div>
                 <div>
                   <span className="text-sm font-medium text-gray-500">Date of Birth:</span>
-                  <p className="text-sm text-gray-900">{formatDateOnly(appointment.dob)}</p>
+                  <p className="text-sm text-gray-900">{formatDateOnly(appointment.originalData.DoB) || "N/A"} </p>
                 </div>
                 <div>
                   <span className="text-sm font-medium text-gray-500">Blood Type:</span>
@@ -89,7 +90,7 @@ const AppointmentDetailModal = ({ appointment, isOpen, onClose, onStatusChange }
                 </div>
                 <div>
                   <span className="text-sm font-medium text-gray-500">Address:</span>
-                  <p className="text-sm text-gray-900">{appointment.address || 'N/A'}</p>
+                  <p className="text-sm text-gray-900">{appointment.originalData.address || 'N/A'}</p>
                 </div>
               </div>
             </div>
@@ -115,11 +116,11 @@ const AppointmentDetailModal = ({ appointment, isOpen, onClose, onStatusChange }
                 </div>
                 <div>
                   <span className="text-sm font-medium text-gray-500">User ID:</span>
-                  <p className="text-sm text-gray-900">{appointment.user_id}</p>
+                  <p className="text-sm text-gray-900">{appointment.originalData.user_id}</p>
                 </div>
                 <div>
                   <span className="text-sm font-medium text-gray-500">Center ID:</span>
-                  <p className="text-sm text-gray-900">{appointment.center_id}</p>
+                  <p className="text-sm text-gray-900">{appointment.originalData.center_id}</p>
                 </div>
               </div>
             </div>

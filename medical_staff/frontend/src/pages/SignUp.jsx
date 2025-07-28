@@ -33,7 +33,7 @@ export default function SignUp() {
     lastName: "",
     email: "",
     phoneNumber: "",
-    role: "",
+    role: "staff", // Initialize with default role
     center: "",
     password: "",
     rePassword: "",
@@ -181,7 +181,7 @@ export default function SignUp() {
                 </label>
                 <select
                 id="role"
-                value={formData.role}
+                value={formData.role || "staff"}
                 onChange={(e) => handleInputChange("role", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                 required
