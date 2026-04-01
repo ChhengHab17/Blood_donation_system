@@ -23,3 +23,36 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Binaries
+*.dll
+*.exe
+*.bak
+*.backup
+*~
+.*.swp
+
+# Go (if used)
+bin/
+pkg/
+vendor/
+go.work*
+
+# IDEs
+.zed/
+*.iml
+
+# Terraform (VERY IMPORTANT)
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+*.tfvars
+*.tfvars.json
+
+# Coverage
+coverage.txt
+
+# Misc
+.vagrant/
+modules-dev/
