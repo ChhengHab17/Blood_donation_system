@@ -13,8 +13,13 @@ import dotenv from 'dotenv';
 dotenv.config();
 const app = express();
 app.use(cors());
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 app.use('/auth', authRouter);
 app.use('/api/report',verifyToken, reportRouter);
 app.use('/api',verifyToken, centerRequestRouter);
@@ -31,6 +36,6 @@ sequelize.authenticate()
     console.error('Unable to connect to the database:', error);
   });
 
-app.listen(process.env.PORT, () => {
-    console.log(`Server is running on port ${process.env.PORT}`);
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 })
