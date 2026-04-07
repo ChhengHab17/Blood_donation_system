@@ -168,6 +168,21 @@ const createSchema = async (client) => {
 };
 
 const seedData = async (client) => {
+  const buildBulkInsert = (table, columns, rows) => {
+    const values = [];
+    const placeholders = rows.map((row) => {
+      const startIndex = values.length + 1;
+      values.push(...row);
+      const rowPlaceholders = row.map((_, index) => `$${startIndex + index}`);
+      return `(${rowPlaceholders.join(', ')})`;
+    });
+
+    return {
+      text: `INSERT INTO ${table} (${columns.join(', ')}) VALUES ${placeholders.join(', ')}`,
+      values
+    };
+  };
+
   await client.query(`
     INSERT INTO blood_type (type)
     VALUES
@@ -184,6 +199,33 @@ const seedData = async (client) => {
         ('Siem Reap Donation Hub', 'National Road 6, Svay Dangkum', 'Siem Reap', '+85563988111', 'siemreap.hub@blood.org'),
         ('Battambang Community Center', 'Street 1.5, Svay Por', 'Battambang', '+85553977111', 'battambang.center@blood.org');
     `);
+  }
+
+  const donationCenterTarget = 20;
+  const refreshedCenterCount = await client.query('SELECT COUNT(*)::INT AS count FROM donation_center;');
+  if (refreshedCenterCount.rows[0].count < donationCenterTarget) {
+    const needed = donationCenterTarget - refreshedCenterCount.rows[0].count;
+    const cities = ['Phnom Penh', 'Siem Reap', 'Battambang', 'Kampong Cham', 'Banteay Meanchey', 'Takeo', 'Kandal'];
+    const centerRows = [];
+
+    for (let i = 0; i < needed; i += 1) {
+      const index = refreshedCenterCount.rows[0].count + i + 1;
+      const city = cities[index % cities.length];
+      centerRows.push([
+        `Community Blood Center ${index}`,
+        `Street ${100 + index}, Block ${index % 12}`,
+        city,
+        `+8551299${String(index).padStart(4, '0')}`,
+        `center${index}@blood.org`
+      ]);
+    }
+
+    const insertCenters = buildBulkInsert(
+      'donation_center',
+      ['name', 'address', 'city', 'contact_num', 'email'],
+      centerRows
+    );
+    await client.query(insertCenters.text, insertCenters.values);
   }
 
   const bloodTypeRows = await client.query('SELECT type_id, type FROM blood_type;');
@@ -216,6 +258,44 @@ const seedData = async (client) => {
     );
   }
 
+  const usersTarget = 25;
+  const refreshedUsersCount = await client.query('SELECT COUNT(*)::INT AS count FROM users;');
+  if (refreshedUsersCount.rows[0].count < usersTarget) {
+    const donorPassword = await bcrypt.hash('Donor@123', 10);
+    const needed = usersTarget - refreshedUsersCount.rows[0].count;
+    const genders = ['Male', 'Female', 'Other'];
+    const userRows = [];
+    const bloodTypeIds = Object.values(bloodTypeMap);
+
+    for (let i = 0; i < needed; i += 1) {
+      const index = refreshedUsersCount.rows[0].count + i + 1;
+      const gender = genders[index % genders.length];
+      const bloodTypeId = bloodTypeIds[index % bloodTypeIds.length];
+      const dobDay = String((index % 28) + 1).padStart(2, '0');
+      const donationDay = String(((index + 7) % 28) + 1).padStart(2, '0');
+
+      userRows.push([
+        `Donor${index}`,
+        `Seed${index}`,
+        donorPassword,
+        gender,
+        `199${index % 10}-0${(index % 8) + 1}-${dobDay}`,
+        bloodTypeId,
+        `Seed Address ${index}`,
+        `+8551788${String(index).padStart(4, '0')}`,
+        `donor${index}@example.com`,
+        `2026-03-${donationDay}`
+      ]);
+    }
+
+    const insertUsers = buildBulkInsert(
+      'users',
+      ['first_name', 'last_name', 'password', 'gender', 'dob', 'blood_type_id', 'address', 'phone_num', 'email', 'last_donation_date'],
+      userRows
+    );
+    await client.query(insertUsers.text, insertUsers.values);
+  }
+
   const staffCount = await client.query('SELECT COUNT(*)::INT AS count FROM medical_staff;');
   if (staffCount.rows[0].count === 0 && centerId) {
     const staffPassword = await bcrypt.hash(process.env.DEFAULT_STAFF_PASSWORD || 'Admin@123', 10);
@@ -234,6 +314,35 @@ const seedData = async (client) => {
     );
   }
 
+  const staffTarget = 20;
+  const refreshedStaffCount = await client.query('SELECT COUNT(*)::INT AS count FROM medical_staff;');
+  if (refreshedStaffCount.rows[0].count < staffTarget && centerId) {
+    const staffPassword = await bcrypt.hash(process.env.DEFAULT_STAFF_PASSWORD || 'Admin@123', 10);
+    const needed = staffTarget - refreshedStaffCount.rows[0].count;
+    const roles = ['Nurse', 'Technician', 'Doctor', 'Coordinator'];
+    const staffRows = [];
+
+    for (let i = 0; i < needed; i += 1) {
+      const index = refreshedStaffCount.rows[0].count + i + 1;
+      staffRows.push([
+        `Staff${index}`,
+        `Seed${index}`,
+        staffPassword,
+        `staff${index}@blood.org`,
+        roles[index % roles.length],
+        `+8559699${String(index).padStart(4, '0')}`,
+        centerId
+      ]);
+    }
+
+    const insertStaff = buildBulkInsert(
+      'medical_staff',
+      ['first_name', 'last_name', 'password', 'email', 'role', 'phone_num', 'center_id'],
+      staffRows
+    );
+    await client.query(insertStaff.text, insertStaff.values);
+  }
+
   const userRows = await client.query('SELECT user_id, blood_type_id FROM users ORDER BY user_id;');
   const staffRows = await client.query('SELECT staff_id, center_id FROM medical_staff ORDER BY staff_id;');
 
@@ -249,6 +358,33 @@ const seedData = async (client) => {
         [user.user_id, true, '2026-04-01', 13.5, '120/80', 62]
       );
     }
+  }
+
+  const eligibilityTarget = 25;
+  const refreshedEligibilityCount = await client.query('SELECT COUNT(*)::INT AS count FROM eligibility_record;');
+  if (refreshedEligibilityCount.rows[0].count < eligibilityTarget && userRows.rows.length > 0) {
+    const needed = Math.min(eligibilityTarget - refreshedEligibilityCount.rows[0].count, userRows.rows.length);
+    const eligibilityRows = [];
+
+    for (let i = 0; i < needed; i += 1) {
+      const user = userRows.rows[i];
+      const day = String((i % 28) + 1).padStart(2, '0');
+      eligibilityRows.push([
+        user.user_id,
+        i % 2 === 0,
+        `2026-04-${day}`,
+        12.5 + (i % 5),
+        `120/${75 + (i % 10)}`,
+        55 + (i % 20)
+      ]);
+    }
+
+    const insertEligibility = buildBulkInsert(
+      'eligibility_record',
+      ['user_id', 'is_eligible', 'check_date', 'hemoglobin_level', 'blood_pressure', 'weight'],
+      eligibilityRows
+    );
+    await client.query(insertEligibility.text, insertEligibility.values);
   }
 
   const appointmentCount = await client.query('SELECT COUNT(*)::INT AS count FROM appointment;');
@@ -271,6 +407,35 @@ const seedData = async (client) => {
         'Scheduled'
       ]
     );
+  }
+
+  const appointmentTarget = 25;
+  const refreshedAppointmentCount = await client.query('SELECT COUNT(*)::INT AS count FROM appointment;');
+  if (refreshedAppointmentCount.rows[0].count < appointmentTarget && userRows.rows.length > 0 && centerRows.rows.length > 0) {
+    const needed = appointmentTarget - refreshedAppointmentCount.rows[0].count;
+    const statuses = ['Scheduled', 'Completed', 'Cancelled', 'No show'];
+    const appointmentRows = [];
+
+    for (let i = 0; i < needed; i += 1) {
+      const user = userRows.rows[i % userRows.rows.length];
+      const center = centerRows.rows[i % centerRows.rows.length];
+      const day = String((i % 28) + 1).padStart(2, '0');
+      const hour = String(8 + (i % 8)).padStart(2, '0');
+      const minute = i % 2 === 0 ? '00' : '30';
+      appointmentRows.push([
+        user.user_id,
+        center.center_id,
+        `2026-04-${day} ${hour}:${minute}:00`,
+        statuses[i % statuses.length]
+      ]);
+    }
+
+    const insertAppointments = buildBulkInsert(
+      'appointment',
+      ['user_id', 'center_id', 'date_time', 'status'],
+      appointmentRows
+    );
+    await client.query(insertAppointments.text, insertAppointments.values);
   }
 
   const donationRecordCount = await client.query('SELECT COUNT(*)::INT AS count FROM donation_record;');
@@ -299,6 +464,36 @@ const seedData = async (client) => {
     );
   }
 
+  const donationRecordTarget = 25;
+  const refreshedDonationCount = await client.query('SELECT COUNT(*)::INT AS count FROM donation_record;');
+  if (refreshedDonationCount.rows[0].count < donationRecordTarget && userRows.rows.length > 0 && centerRows.rows.length > 0) {
+    const needed = donationRecordTarget - refreshedDonationCount.rows[0].count;
+    const statuses = ['Accepted', 'Rejected', 'Pending'];
+    const donationRows = [];
+
+    for (let i = 0; i < needed; i += 1) {
+      const user = userRows.rows[i % userRows.rows.length];
+      const staff = staffRows.rows[i % staffRows.rows.length];
+      const center = centerRows.rows[i % centerRows.rows.length];
+      const day = String((i % 28) + 1).padStart(2, '0');
+      donationRows.push([
+        user.user_id,
+        staff?.staff_id ?? null,
+        center.center_id,
+        `2026-03-${day}`,
+        350 + (i % 3) * 50,
+        statuses[i % statuses.length]
+      ]);
+    }
+
+    const insertDonations = buildBulkInsert(
+      'donation_record',
+      ['user_id', 'staff_id', 'center_id', 'date', 'volume', 'status'],
+      donationRows
+    );
+    await client.query(insertDonations.text, insertDonations.values);
+  }
+
   const bloodCount = await client.query('SELECT COUNT(*)::INT AS count FROM blood;');
   if (bloodCount.rows[0].count === 0) {
     const acceptedDonation = await client.query(`
@@ -322,6 +517,41 @@ const seedData = async (client) => {
     }
   }
 
+  const bloodTarget = 25;
+  const refreshedBloodCount = await client.query('SELECT COUNT(*)::INT AS count FROM blood;');
+  if (refreshedBloodCount.rows[0].count < bloodTarget) {
+    const needed = bloodTarget - refreshedBloodCount.rows[0].count;
+    const donationRows = await client.query(`
+      SELECT dr.donation_id, COALESCE(u.blood_type_id, (SELECT type_id FROM blood_type WHERE type = 'O+' LIMIT 1)) AS blood_type_id
+      FROM donation_record dr
+      JOIN users u ON u.user_id = dr.user_id
+      ORDER BY dr.donation_id
+      LIMIT $1;
+    `, [needed]);
+
+    if (donationRows.rows.length > 0) {
+      const bloodRows = [];
+      for (let i = 0; i < donationRows.rows.length; i += 1) {
+        const donation = donationRows.rows[i];
+        const day = String((i % 28) + 1).padStart(2, '0');
+        bloodRows.push([
+          donation.donation_id,
+          donation.blood_type_id,
+          350 + (i % 3) * 50,
+          `2026-03-${day}`,
+          `2026-05-${day}`
+        ]);
+      }
+
+      const insertBlood = buildBulkInsert(
+        'blood',
+        ['donation_id', 'blood_type_id', 'volume', 'collected_date', 'expiry_date'],
+        bloodRows
+      );
+      await client.query(insertBlood.text, insertBlood.values);
+    }
+  }
+
   const inventoryCount = await client.query('SELECT COUNT(*)::INT AS count FROM blood_inventory;');
   if (inventoryCount.rows[0].count === 0 && centerRows.rows.length > 0) {
     const bloodRow = await client.query('SELECT blood_id FROM blood ORDER BY blood_id LIMIT 1;');
@@ -333,6 +563,37 @@ const seedData = async (client) => {
         `,
         [1, '2026-04-02', bloodRow.rows[0].blood_id, centerRows.rows[0].center_id, 'Available']
       );
+    }
+  }
+
+  const inventoryTarget = 25;
+  const refreshedInventoryCount = await client.query('SELECT COUNT(*)::INT AS count FROM blood_inventory;');
+  if (refreshedInventoryCount.rows[0].count < inventoryTarget && centerRows.rows.length > 0) {
+    const needed = inventoryTarget - refreshedInventoryCount.rows[0].count;
+    const bloodRows = await client.query('SELECT blood_id FROM blood ORDER BY blood_id LIMIT $1;', [needed]);
+    if (bloodRows.rows.length > 0) {
+      const inventoryRows = [];
+      const statuses = ['Available', 'Used', 'Expired', 'In Transit'];
+
+      for (let i = 0; i < bloodRows.rows.length; i += 1) {
+        const bloodRow = bloodRows.rows[i];
+        const center = centerRows.rows[i % centerRows.rows.length];
+        const day = String((i % 28) + 1).padStart(2, '0');
+        inventoryRows.push([
+          (i % 5) + 1,
+          `2026-04-${day}`,
+          bloodRow.blood_id,
+          center.center_id,
+          statuses[i % statuses.length]
+        ]);
+      }
+
+      const insertInventory = buildBulkInsert(
+        'blood_inventory',
+        ['quantity_units', 'last_update', 'blood_id', 'center_id', 'status'],
+        inventoryRows
+      );
+      await client.query(insertInventory.text, insertInventory.values);
     }
   }
 
@@ -359,6 +620,37 @@ const seedData = async (client) => {
         staffRows.rows[0].staff_id,
         userRows.rows[1]?.blood_type_id ?? bloodTypeMap['A+']
       ]
+    );
+  }
+
+  const bloodRequestTarget = 25;
+  if (bloodRequestCount.rows[0].count < bloodRequestTarget && userRows.rows.length > 0 && staffRows.rows.length > 0) {
+    const needed = bloodRequestTarget - bloodRequestCount.rows[0].count;
+    const statusOptions = ['Pending', 'Accepted', 'Rejected'];
+    const values = [];
+    const params = [];
+    let paramIndex = 1;
+
+    for (let i = 0; i < needed; i += 1) {
+      const user = userRows.rows[i % userRows.rows.length];
+      const staff = staffRows.rows[i % staffRows.rows.length];
+      const bloodTypeId = user.blood_type_id ?? bloodTypeMap['O+'];
+      const day = String((i % 28) + 1).padStart(2, '0');
+      const requestDate = `2026-04-${day}`;
+      const status = statusOptions[i % statusOptions.length];
+      const quantityUnits = (i % 4) + 1;
+
+      values.push(`($${paramIndex}, $${paramIndex + 1}, $${paramIndex + 2}, $${paramIndex + 3}, $${paramIndex + 4}, $${paramIndex + 5})`);
+      params.push(quantityUnits, requestDate, status, user.user_id, staff.staff_id, bloodTypeId);
+      paramIndex += 6;
+    }
+
+    await client.query(
+      `
+        INSERT INTO blood_request (quantity_units, request_date, status, user_id, staff_id, blood_type_id)
+        VALUES ${values.join(', ')}
+      `,
+      params
     );
   }
 };
