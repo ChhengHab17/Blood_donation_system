@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "node test-models.js",
+    "db:init": "node database/initDatabase.js",
     "start": "node server.js",
     "dev": "node --watch server.js"
   },
