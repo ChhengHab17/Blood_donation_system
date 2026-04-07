@@ -23,7 +23,8 @@ const createClient = (database) => new Client({
   port: DB_PORT,
   user: DB_USER,
   password: DB_PASSWORD,
-  database
+  database,
+  ssl: { rejectUnauthorized: false }
 });
 
 const createEnumIfNotExists = async (client, enumName, values) => {
