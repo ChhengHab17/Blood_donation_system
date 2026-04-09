@@ -14,3 +14,9 @@ variable "aws_region" {
   type        = string
   default     = "ap-southeast-1"
 }
+
+variable "app_port" {
+  description = "Port exposed by the backend application."
+  type        = number
+  default     = 3000
+}
