@@ -1,4 +1,5 @@
 import express from 'express';
+import os from 'os';
 import cors from 'cors';
 import { reportRouter, centerRequestRouter } from './routes/reportRoutes.js';
 import { authRouter } from './routes/authRoutes.js';
@@ -19,7 +20,7 @@ const AUTO_INIT_DB_ON_START = (process.env.AUTO_INIT_DB_ON_START ?? 'true').toLo
 
 app.use(express.json());
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok' });
+  res.status(200).json({ status: 'ok', hostname: os.hostname() });
 });
 
 app.use('/auth', authRouter);
