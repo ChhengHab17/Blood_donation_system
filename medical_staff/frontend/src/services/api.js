@@ -12,7 +12,7 @@ axios.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-const BASE_URL = 'http://app-alb-1481747295.ap-southeast-1.elb.amazonaws.com';
+const BASE_URL = 'http://app-alb-2126139016.ap-southeast-1.elb.amazonaws.com';
 const API_URL = `${BASE_URL}/api`;
 
 export const getUser = async (page = 1, limit = 10) => {
