@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import axios from 'axios'
+import { donorAPI } from "../../services/api"
 
 export default function DonorTable() {
   const [donors, setDonors] = useState([])
@@ -16,8 +16,7 @@ export default function DonorTable() {
 
   const fetchDonors = async (pageNum = 1, append = false) => {
     try {
-      const response = await axios.get(`http://localhost:3000/api/donors?page=${pageNum}&limit=10`)
-      const data = response.data
+      const data = await donorAPI.getAll(pageNum, 10)
       // If backend returns meta, use it
       if (data.meta && typeof data.meta.totalPages === 'number') {
         setTotalPages(data.meta.totalPages);

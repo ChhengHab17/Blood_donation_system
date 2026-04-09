@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import axios from 'axios'
+import { donorAPI } from "../../services/api"
 
 export default function EditDonor() {
   const { donorId } = useParams()
@@ -31,10 +31,11 @@ export default function EditDonor() {
   useEffect(() => {
     if (!donorId) return
 
-    // Fetch donor data to pre-populate form
-    axios.get(`http://localhost:3000/api/donors/${donorId}/details`)
-      .then((res) => {
-        const donorInfo = res.data.donor_info
+    const loadDonor = async () => {
+      try {
+        // Fetch donor data to pre-populate form
+        const data = await donorAPI.getDetails(donorId)
+        const donorInfo = data.donor_info
         if (donorInfo) {
           setFormData({
             name: `${donorInfo.first_name} ${donorInfo.last_name}`.trim(),
@@ -47,12 +48,14 @@ export default function EditDonor() {
           })
         }
         setLoading(false)
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error("Error fetching donor details:", err)
         setError(err.message)
         setLoading(false)
-      })
+      }
+    }
+
+    loadDonor()
   }, [donorId])
 
   const handleInputChange = (e) => {
@@ -115,10 +118,10 @@ export default function EditDonor() {
     setError(null)
 
     try {
-      const response = await axios.put(`http://localhost:3000/api/donors/${donorId}`, formData)
+      const data = await donorAPI.update(donorId, formData)
 
-      if (response.data.error) {
-        throw new Error(response.data.error)
+      if (data?.error) {
+        throw new Error(data.error)
       }
 
       setSuccessMessage("Donor information updated successfully!")

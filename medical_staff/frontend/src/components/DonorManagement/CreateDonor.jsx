@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import axios from "axios"
 import { useNavigate } from "react-router-dom"
+import { donorAPI } from "../../services/api"
 
 function getTodayDateString() {
   const today = new Date();
@@ -133,15 +133,16 @@ export default function CreateDonorAccount() {
         blood_pressure: formData.blood_pressure,
         weight: Number(formData.weight),
       };
-      const response = await axios.post("http://localhost:3000/api/donors", payload)
+      const data = await donorAPI.create(payload)
 
-      const data = response.data
+      if (data?.error) {
+        throw new Error(data.error)
+      }
 
-      if (response.status === 200 || response.status === 201) {
-        setMessage({
-          type: "success",
-          text: `Donor account created successfully! ${data.message || ""}`,
-        })
+      setMessage({
+        type: "success",
+        text: `Donor account created successfully! ${data.message || ""}`,
+      })
 
         // Trigger inventory refresh event
         window.dispatchEvent(new CustomEvent('inventoryRefresh'));
@@ -164,13 +165,7 @@ export default function CreateDonorAccount() {
           blood_pressure: "",
           weight: "",
         })
-        setErrors({})
-      } else {
-        setMessage({
-          type: "error",
-          text: data.error || data.message || "Failed to create donor account",
-        })
-      }
+      setErrors({})
     } catch (error) {
       console.error("Network error:", error)
       setMessage({

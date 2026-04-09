@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useImperativeHandle, useRef } from 'react'
-import axios from 'axios'
+import { inventoryAPI } from "../../services/api"
 
 const InventoryTable1 = React.forwardRef((props, ref) => {
   const [inventoryData, setInventoryData] = useState([])
@@ -14,8 +14,7 @@ const InventoryTable1 = React.forwardRef((props, ref) => {
   const fetchInventory = async (pageNum = 1, append = false) => {
     try {
       setLoading(true)
-      const response = await axios.get(`http://localhost:3000/api/inventory?page=${pageNum}&limit=10`)
-      const data = response.data
+      const data = await inventoryAPI.getAll(pageNum, 10)
       // If backend returns meta, use it
       if (data.meta && typeof data.meta.totalPages === 'number') {
         setTotalPages(data.meta.totalPages);

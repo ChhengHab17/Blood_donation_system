@@ -12,7 +12,8 @@ axios.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-const API_URL = 'http://localhost:3000/api';
+const BASE_URL = 'http://app-alb-1481747295.ap-southeast-1.elb.amazonaws.com';
+const API_URL = `${BASE_URL}/api`;
 
 export const getUser = async (page = 1, limit = 10) => {
     try{
@@ -125,7 +126,7 @@ export const searchName = async (name) => {
 }
 export const registerUser = async (firstName, lastName, email, phoneNumber, role, centerId, password, rePassword) => {
     try {
-        const response = await axios.post(`http://localhost:3000/auth/register`, {
+        const response = await axios.post(`${BASE_URL}/auth/register`, {
             firstName,
             lastName,
             email,
@@ -143,7 +144,7 @@ export const registerUser = async (firstName, lastName, email, phoneNumber, role
 }
 export const loginUser = async (email, password) => {
     try {
-        const response = await axios.post(`http://localhost:3000/auth/login`, {
+        const response = await axios.post(`${BASE_URL}/auth/login`, {
             email,
             password
         });
@@ -156,13 +157,53 @@ export const loginUser = async (email, password) => {
 
 export const getDonationCenters = async () => {
     try {
-        const response = await axios.get(`http://localhost:3000/auth/donation-centers`);
+        const response = await axios.get(`${BASE_URL}/auth/donation-centers`);
         return response.data;
     } catch (error) {
         console.error('Error fetching donation centers:', error);
         throw error;
     }
 }
+
+// Donor API functions
+export const donorAPI = {
+    getAll: async (page = 1, limit = 10) => {
+        const response = await axios.get(`${API_URL}/donors`, {
+            params: { page, limit }
+        });
+        return response.data;
+    },
+
+    getDetails: async (donorId) => {
+        const response = await axios.get(`${API_URL}/donors/${donorId}/details`);
+        return response.data;
+    },
+
+    create: async (payload) => {
+        const response = await axios.post(`${API_URL}/donors`, payload);
+        return response.data;
+    },
+
+    update: async (donorId, payload) => {
+        const response = await axios.put(`${API_URL}/donors/${donorId}`, payload);
+        return response.data;
+    },
+
+    delete: async (donorId) => {
+        const response = await axios.delete(`${API_URL}/donors/${donorId}`);
+        return response.data;
+    }
+};
+
+// Inventory API functions
+export const inventoryAPI = {
+    getAll: async (page = 1, limit = 10) => {
+        const response = await axios.get(`${API_URL}/inventory`, {
+            params: { page, limit }
+        });
+        return response.data;
+    }
+};
 // Helper function to handle API responses
 const handleResponse = async (response) => {
   if (!response.ok) {
@@ -275,6 +316,6 @@ export const bloodRequestAPI = {
 
 // Health check
 export const healthCheck = async () => {
-  const response = await axios.get(`${API_URL}/health`);
+  const response = await axios.get(`${BASE_URL}/health`);
   return response.data;
 }; 

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import axios from "axios"
+import { donorAPI } from "../../services/api"
 
 export default function DonorDetail() {
   const { donorId } = useParams()
@@ -14,17 +14,20 @@ export default function DonorDetail() {
   useEffect(() => {
     if (!donorId) return
 
-    // Fetch comprehensive donor data
-    axios.get(`http://localhost:3000/api/donors/${donorId}/details`)
-      .then((response) => {
-        setDonorData(response.data)
+    const loadDonor = async () => {
+      try {
+        // Fetch comprehensive donor data
+        const data = await donorAPI.getDetails(donorId)
+        setDonorData(data)
         setLoading(false)
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error("Error fetching donor details:", err)
         setError(err.message)
         setLoading(false)
-      })
+      }
+    }
+
+    loadDonor()
   }, [donorId])
 
   const handleBack = () => {
@@ -79,14 +82,10 @@ export default function DonorDetail() {
   const confirmed = window.confirm("Are you sure you want to delete this donor?");
   if (!confirmed) return;
 
-  axios.delete(`http://localhost:3000/api/donors/${donorId}`)
-    .then((response) => {
-      if (response.status === 200) {
-        alert("Donor deleted successfully");
-        navigate("/donor-management");
-      } else {
-        throw new Error("Failed to delete donor");
-      }
+  donorAPI.delete(donorId)
+    .then(() => {
+      alert("Donor deleted successfully");
+      navigate("/donor-management");
     })
     .catch((err) => {
       console.error("Error deleting donor:", err);
