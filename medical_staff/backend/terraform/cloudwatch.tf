@@ -106,6 +106,23 @@ resource "aws_cloudwatch_dashboard" "main" {
           view = "timeSeries"
         }
       },
+      {
+        type   = "metric"
+        x      = 0
+        y      = 18
+        width  = 24
+        height = 6
+        properties = {
+          title  = "EC2 - CPU Utilization (ASG Average)"
+          region = var.aws_region
+          metrics = [
+            ["AWS/EC2", "CPUUtilization",
+              "AutoScalingGroupName", aws_autoscaling_group.app_asg.name,
+              { stat = "Average", period = 60, label = "CPU %" }]
+          ]
+          view = "timeSeries"
+        }
+      },
       # Log Widget
       {
         type   = "log"
@@ -158,6 +175,24 @@ resource "aws_cloudwatch_metric_alarm" "asg_min_instances" {
   threshold           = 1
   comparison_operator = "LessThanThreshold"
   treat_missing_data  = "breaching"
+  alarm_actions       = [aws_sns_topic.alerts.arn]
+  ok_actions          = [aws_sns_topic.alerts.arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "ec2_cpu_high" {
+  alarm_name          = "ec2-cpu-high"
+  alarm_description   = "Average CPU utilization across ASG instances is above 75% for 3 minutes."
+  namespace           = "AWS/EC2"
+  metric_name         = "CPUUtilization"
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.app_asg.name
+  }
+  statistic           = "Average"
+  period              = 60
+  evaluation_periods  = 3
+  threshold           = 75
+  comparison_operator = "GreaterThanThreshold"
+  treat_missing_data  = "notBreaching"
   alarm_actions       = [aws_sns_topic.alerts.arn]
   ok_actions          = [aws_sns_topic.alerts.arn]
 }

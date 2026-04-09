@@ -44,6 +44,11 @@ apt-get install -y nodejs
 echo "Node version: $(node --version)"
 echo "npm  version: $(npm --version)"
 
+echo ">>> Installing Amazon CloudWatch Agent..."
+curl -fsSL -o /tmp/amazon-cloudwatch-agent.deb \
+  https://amazoncloudwatch-agent.s3.amazonaws.com/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
+dpkg -i /tmp/amazon-cloudwatch-agent.deb || apt-get install -f -y
+
 APP_ROOT="/opt/blood_donation_system"
 APP_DIR="$${APP_ROOT}/${var.app_repo_subdir}"
 
@@ -118,6 +123,38 @@ if [ "$${db_init_ok}" -ne 1 ]; then
   echo "WARNING: db:init failed after all retries — app will attempt init on startup"
 fi
 
+echo ">>> Configuring CloudWatch log shipping..."
+touch /var/log/blood-backend.log
+chmod 644 /var/log/blood-backend.log
+
+cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json <<'CWAGENT'
+{
+  "agent": {
+    "region": "${var.aws_region}"
+  },
+  "logs": {
+    "logs_collected": {
+      "files": {
+        "collect_list": [
+          {
+            "file_path": "/var/log/app-deploy.log",
+            "log_group_name": "${aws_cloudwatch_log_group.app_logs.name}",
+            "log_stream_name": "{instance_id}/app-deploy.log",
+            "timezone": "UTC"
+          },
+          {
+            "file_path": "/var/log/blood-backend.log",
+            "log_group_name": "${aws_cloudwatch_log_group.app_logs.name}",
+            "log_stream_name": "{instance_id}/blood-backend.log",
+            "timezone": "UTC"
+          }
+        ]
+      }
+    }
+  }
+}
+CWAGENT
+
 echo ">>> Creating systemd service..."
 cat > /etc/systemd/system/blood-backend.service <<SERVICE
 [Unit]
@@ -135,8 +172,8 @@ RestartSec=10
 StartLimitIntervalSec=300
 StartLimitBurst=10
 Environment=NODE_ENV=production
-StandardOutput=journal
-StandardError=journal
+StandardOutput=append:/var/log/blood-backend.log
+StandardError=append:/var/log/blood-backend.log
 
 [Install]
 WantedBy=multi-user.target
@@ -145,6 +182,14 @@ SERVICE
 systemctl daemon-reload
 systemctl enable blood-backend
 systemctl restart blood-backend
+
+echo ">>> Starting CloudWatch agent..."
+/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a stop || true
+/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
+  -a fetch-config \
+  -m ec2 \
+  -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json \
+  -s
 
 echo ">>> Verifying service started..."
 sleep 5

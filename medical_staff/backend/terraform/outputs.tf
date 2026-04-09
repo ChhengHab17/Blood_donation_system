@@ -3,9 +3,9 @@ output "asg_name" {
   value = aws_autoscaling_group.app_asg.name
 }
 
-output "instance_hostname" {
-  description = "Private DNS name of the EC2 instance."
-  value       = aws_instance.app_server.private_dns
+output "instance_name" {
+  description = "Name tag applied to EC2 instances launched by the ASG."
+  value       = var.instance_name
 }
 
 # Load Balancer output (to access your app)
