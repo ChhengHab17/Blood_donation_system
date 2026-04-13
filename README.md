@@ -1,62 +1,123 @@
-# 🩸 Blood Donation System
+# 🩸 Blood Donation System - Cloud Edition
 
-A RESTful backend API for managing blood donation operations, built with **Node.js** and **PostgreSQL**, deployed on AWS using Terraform.
-
----
-
-## Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Runtime | Node.js 20 |
-| Database | PostgreSQL 15 |
-| Authentication | JWT |
-| Infrastructure | Terraform |
-| Cloud | AWS (ap-southeast-1) |
+A secure, scalable, and highly available web application designed to bridge the gap between donors and hospitals.  
+This project demonstrates the transition from a local backend to a professional AWS Cloud Infrastructure using Infrastructure as Code (IaC).
 
 ---
 
-## AWS Services
+## 🏗 Architecture Overview
 
-**VPC** — Isolated network with public and private subnets across 2 Availability Zones. EC2 and RDS live in private subnets; only the ALB is public-facing.
+The system is deployed in the **AWS Asia Pacific (Singapore)** region using a multi-layered network design:
 
-**Application Load Balancer (ALB)** — Receives all incoming HTTP traffic on port 80 and distributes it across healthy EC2 instances. Performs health checks on `/health`.
-
-**Auto Scaling Group (ASG)** — Keeps 1–3 EC2 instances (`t3.micro`) running at all times. Automatically replaces unhealthy instances and supports rolling updates.
-
-**RDS PostgreSQL** — Managed PostgreSQL 15 database (`db.t3.micro`, 20 GB) in a private subnet. Only accessible from EC2 instances within the VPC.
-
-**IAM** — EC2 instances are assigned a role with SSM access, allowing remote session management without opening SSH ports.
-
-**Security Groups** — Three separate security groups for ALB (public HTTP/HTTPS), EC2 (traffic from ALB only), and RDS (traffic from EC2 only).
-
-**CloudWatch** — Collects application and RDS logs, provides a monitoring dashboard, and sends email alerts for critical events such as unhealthy hosts, low storage, and high error rates.
-
-**SNS** — Delivers CloudWatch alarm notifications to the configured email address.
+- **High Availability:** Distributed across two Availability Zones (AZs)
+- **Auto-Scaling:** Automatically adjusts server capacity based on demand
+- **Security:** Database is isolated in a private subnet, accessible only by the backend
+- **Automation:** Fully provisioned via Terraform
 
 ---
 
-## Getting Started
+## 🚀 Technologies Used
+
+- **Backend:** Node.js, Express  
+- **Process Management:** PM2  
+- **Database:** Amazon RDS (PostgreSQL/MySQL)  
+- **Infrastructure:** Terraform (IaC)  
+- **Cloud Provider:** AWS (EC2, ALB, ASG, VPC, IAM, CloudWatch)
+
+---
+
+## 💻 Local Installation
+
+To run the project locally for development:
+
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/ChhengHab17/Blood_donation_system.git
-cd Blood_donation_system/medical_staff/backend
-npm install
-cp .env.example .env   # fill in your DB and JWT values
-npm run db:init
-npm start
+cd Blood_donation_system
 ```
 
----
-
-## Infrastructure Deployment
+### 2. Install Dependencies
 
 ```bash
-terraform init
-terraform plan
-terraform apply
+npm install
 ```
 
-After apply, the ALB DNS name is printed as output — that is your API base URL.
+### 3. Configure Environment Variables
+
+Create a `.env` file in the root directory:
+
+```env
+PORT=3000
+DB_HOST=your_database_endpoint
+DB_USER=your_username
+DB_PASSWORD=your_password
+DB_NAME=blood_donation_db
+```
+
+### 4. Run the Application
+
+```bash
+node index.js
+```
 
 ---
+
+## ☁️ AWS Cloud Deployment (via Terraform)
+
+The infrastructure is fully automated. Follow these steps to deploy to AWS:
+
+### 1. Prerequisites
+
+- An AWS Account  
+- AWS CLI configured with appropriate credentials  
+- Terraform installed on your local machine  
+
+### 2. Initialize and Deploy
+
+```bash
+# Initialize Terraform and download providers
+terraform init
+
+# Review the infrastructure plan
+terraform plan
+
+# Deploy the infrastructure to AWS
+terraform apply -auto-approve
+```
+
+### 3. Application Bootstrapping
+
+Once `terraform apply` is complete:
+
+- The Auto Scaling Group launches two EC2 instances  
+- The User Data script installs Node.js and PM2 automatically  
+- The script clones this repo and starts the backend on port 3000  
+- The Application Load Balancer (ALB) provides a public DNS URL  
+
+---
+
+## 🛡 Security & Resilience
+
+- **Network Isolation:** RDS has no public IP and runs in a private subnet  
+- **Chain of Trust:**
+  - Database only accepts traffic from EC2  
+  - EC2 only accepts traffic from ALB  
+- **Self-Healing:** Auto Scaling replaces failed EC2 instances automatically  
+
+---
+
+## 📊 Monitoring
+
+System health is tracked via Amazon CloudWatch:
+
+- CPU Utilization  
+- ALB Request Count  
+- Target Group Health Status  
+
+---
+
+## 💰 Cost Estimation (Singapore Region)
+
+- **Estimated Monthly Cost:** ~$84.47 (On-Demand)  
+- **Optimization:** Using AWS Free Tier (`t3.micro`) can significantly reduce costs for the first 12 months  
