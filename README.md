@@ -36,27 +36,6 @@ A RESTful backend API for managing blood donation operations, built with **Node.
 
 ---
 
-## Architecture
-Internet
-│
-▼
-┌──────────────────┐
-│       ALB        │  (Public)
-└────────┬─────────┘
-│
-┌─────┴─────┐
-▼           ▼
-┌──────┐   ┌──────┐
-│ EC2  │   │ EC2  │  (Private)
-└──┬───┘   └───┬──┘
-└─────┬─────┘
-▼
-┌──────────────────┐
-│  RDS PostgreSQL  │  (Private)
-└──────────────────┘
-
----
-
 ## Getting Started
 
 ```bash
